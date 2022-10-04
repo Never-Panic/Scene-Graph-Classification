@@ -1,8 +1,10 @@
+import os
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 
@@ -18,7 +20,8 @@ class BaseTrainer:
                  learning_rate: float = 0.1,
                  momentum: float = 0.9,
                  weight_decay: float = 0.0005,
-                 epochs: int = 100) -> None:
+                 epochs: int = 100,
+                 model_name: str = 'model') -> None:
         self.net = net
         self.train_loader = train_loader
 
@@ -39,6 +42,11 @@ class BaseTrainer:
                 1e-6 / learning_rate,
             ),
         )
+        
+        logfolder=f'./log/{model_name}'
+        os.makedirs(logfolder, exist_ok=True)
+        self.summary_writer = SummaryWriter(logfolder)
+        self.curr_epoch = 0
 
     def train_epoch(self):
         self.net.train()  # enter train mode
@@ -47,7 +55,6 @@ class BaseTrainer:
         train_dataiter = iter(self.train_loader)
 
         for train_step in tqdm(range(1, len(train_dataiter) + 1)):
-            # for train_step in tqdm(range(1, 5)):
             batch = next(train_dataiter)
             data = batch['data'].cuda()
             target = batch['soft_label'].cuda()
@@ -56,6 +63,8 @@ class BaseTrainer:
             loss = F.binary_cross_entropy_with_logits(logits,
                                                       target,
                                                       reduction='sum')
+
+            self.summary_writer.add_scalar('loss', loss.detach().item(), global_step=train_step+self.curr_epoch*len(train_dataiter))
             # backward
             self.optimizer.zero_grad()
             loss.backward()
@@ -68,5 +77,7 @@ class BaseTrainer:
 
         metrics = {}
         metrics['train_loss'] = loss_avg
+
+        self.curr_epoch += 1
 
         return metrics

@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--model_name', type=str, default='res50')
 parser.add_argument('--epoch', type=int, default=36)
 parser.add_argument('--lr', type=float, default=0.001)
-parser.add_argument('--batch_size', type=int, default=16)
+parser.add_argument('--batch_size', type=int, default=8)
 parser.add_argument('--momentum', type=float, default=0.9)
 parser.add_argument('--weight_decay', type=float, default=0.0005)
 
@@ -55,7 +55,8 @@ trainer = BaseTrainer(model,
                       learning_rate=args.lr,
                       momentum=args.momentum,
                       weight_decay=args.weight_decay,
-                      epochs=args.epoch)
+                      epochs=args.epoch,
+                      model_name=args.model_name)
 evaluator = Evaluator(model, k=3)
 
 # train!
