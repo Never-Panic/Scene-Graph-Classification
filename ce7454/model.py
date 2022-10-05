@@ -1,8 +1,12 @@
 import torch
 import torch.nn as nn
 import torchvision
+import torchvision.transforms as T
 from torchvision.models import resnet34,resnet50
 from positional_encodings.torch_encodings import PositionalEncodingPermute2D
+
+import clip
+
 
 class BackBone(nn.Module):
     def __init__(self) -> None:
@@ -42,11 +46,45 @@ class DETR(nn.Module):
         hs = self.transformer(feature, query_embed)                             # [num_queries,N,C]
 
         outputs_class = self.class_embed(hs)                                    # [num_queries,N,num_classes]
-        outputs_class = torch.sum(outputs_class, dim=0)                         # [N,num_classes]
+        outputs_class = torch.sum(outputs_class, dim=0)                        # [N,num_classes]
 
         return outputs_class                                                    # [N,num_queries]
 
 
+class CLIP_loss(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        clip_model, clip_preprocess = clip.load("ViT-B/16", device='cuda', jit=False)
+        clip_model.eval()
+        for p in clip_model.parameters():
+            p.requires_grad = False
+        
+        self.clip_model = clip_model
+        self.preprocess = T.Compose([
+            T.Resize((224, 224)),
+            T.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
+        ])
 
+    def forward(self, imgs, texts):
+        '''
+        Args:
+            imgs: [N, C, H, W]
+            text: [N] string
+        '''
+        texts = clip.tokenize(texts).cuda()
+        imgs = self.preprocess(imgs)
+
+        text_z = self.clip_model.encode_text(texts)
+        text_z = text_z / text_z.norm(dim=-1, keepdim=True)
+
+        image_z = self.clip_model.encode_image(imgs)
+        image_z = image_z / image_z.norm(dim=-1, keepdim=True)
+        
+        loss_clip = - (image_z * text_z).sum(-1).mean()
+
+        return loss_clip
+
+
+        
 
 

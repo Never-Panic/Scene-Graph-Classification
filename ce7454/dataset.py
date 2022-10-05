@@ -51,6 +51,7 @@ class PSGClsDataset(Dataset):
         super(PSGClsDataset, self).__init__()
         with open('./data/psg/psg_cls_basic.json') as f:
             dataset = json.load(f)
+        self.relations = dataset['predicate_classes']
         self.imglist = [
             d for d in dataset['data']
             if d['image_id'] in dataset[f'{stage}_image_ids']

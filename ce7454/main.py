@@ -26,6 +26,7 @@ os.makedirs('./results', exist_ok=True)
 
 # loading dataset
 train_dataset = PSGClsDataset(stage='train')
+relations = train_dataset.relations 
 train_dataloader = DataLoader(train_dataset,
                               batch_size=args.batch_size,
                               shuffle=True,
@@ -45,13 +46,13 @@ test_dataloader = DataLoader(test_dataset,
 print('Data Loaded...', flush=True)
 
 # loading model
-# model = resnet50(pretrained=True)
-# model.fc = torch.nn.Linear(2048, 56)
-# model.cuda()
-
-
-model = DETR(BackBone())
+model = resnet50(pretrained=True)
+model.fc = torch.nn.Linear(2048, 56)
 model.cuda()
+
+
+# model = DETR(BackBone())
+# model.cuda()
 
 print('Model Loaded...', flush=True)
 
@@ -70,7 +71,7 @@ print('Start Training...', flush=True)
 begin_epoch = time.time()
 best_val_recall = 0.0
 for epoch in range(0, args.epoch):
-    train_metrics = trainer.train_epoch()
+    train_metrics = trainer.train_epoch(relations)
     val_metrics = evaluator.eval_recall(val_dataloader)
 
     # show log

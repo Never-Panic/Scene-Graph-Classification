@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+from model import CLIP_loss
 
 
 def cosine_annealing(step, total_steps, lr_max, lr_min):
@@ -23,20 +24,22 @@ class BaseTrainer:
                  epochs: int = 100,
                  model_name: str = 'model') -> None:
         self.net = net
+        self.clip_loss = CLIP_loss()
+
         self.train_loader = train_loader
 
-        # self.optimizer = torch.optim.SGD(
-        #     net.parameters(),
-        #     learning_rate,
-        #     momentum=momentum,
-        #     weight_decay=weight_decay,
-        #     nesterov=True,
-        # )
-        self.optimizer = torch.optim.Adam(
-            net.parameters(), 
-            learning_rate, 
+        self.optimizer = torch.optim.SGD(
+            net.parameters(),
+            learning_rate,
+            momentum=momentum,
             weight_decay=weight_decay,
+            nesterov=True,
         )
+        # self.optimizer = torch.optim.Adam(
+        #     net.parameters(), 
+        #     learning_rate, 
+        #     weight_decay=weight_decay,
+        # )
 
         self.scheduler = torch.optim.lr_scheduler.LambdaLR(
             self.optimizer,
@@ -53,7 +56,21 @@ class BaseTrainer:
         self.summary_writer = SummaryWriter(logfolder)
         self.curr_epoch = 0
 
-    def train_epoch(self):
+    def cal_clip_loss(self, imgs, logits, relations, k=3):
+        prob = torch.sigmoid(logits)
+        pred = torch.topk(prob, k)[1]               # [N, K]
+        
+        texts = []
+        for batch_pred in pred:
+            text = ''
+            for idx in batch_pred:
+                text += relations[idx] + ' '
+            texts.append(text)
+
+        return self.clip_loss(imgs, texts)
+
+
+    def train_epoch(self, relations):
         self.net.train()  # enter train mode
 
         loss_avg = 0.0
@@ -69,13 +86,18 @@ class BaseTrainer:
                                                       target,
                                                       reduction='sum')
 
-            self.summary_writer.add_scalar('loss', loss.detach().item(), global_step=train_step+self.curr_epoch*len(train_dataiter))
+            clip_loss = self.cal_clip_loss(data, logits, relations)
+            
+            total_loss = loss + clip_loss
             # backward
             self.optimizer.zero_grad()
-            loss.backward()
+            total_loss.backward()
             self.optimizer.step()
             self.scheduler.step()
 
+            self.summary_writer.add_scalar('loss', loss.detach().item(), global_step=train_step+self.curr_epoch*len(train_dataiter))
+            self.summary_writer.add_scalar('clip_loss', clip_loss.detach().item(), global_step=train_step+self.curr_epoch*len(train_dataiter))
+            
             # exponential moving average, show smooth values
             with torch.no_grad():
                 loss_avg = loss_avg * 0.8 + float(loss) * 0.2
