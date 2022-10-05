@@ -24,7 +24,7 @@ class BaseTrainer:
                  epochs: int = 100,
                  model_name: str = 'model') -> None:
         self.net = net
-        self.clip_loss = CLIP_loss()
+        # self.clip_loss = CLIP_loss()
 
         self.train_loader = train_loader
 
@@ -86,9 +86,9 @@ class BaseTrainer:
                                                       target,
                                                       reduction='sum')
 
-            clip_loss = self.cal_clip_loss(data, logits, relations)
+            # clip_loss = self.cal_clip_loss(data, logits, relations)
             
-            total_loss = loss + clip_loss
+            total_loss = loss
             # backward
             self.optimizer.zero_grad()
             total_loss.backward()
@@ -96,7 +96,7 @@ class BaseTrainer:
             self.scheduler.step()
 
             self.summary_writer.add_scalar('loss', loss.detach().item(), global_step=train_step+self.curr_epoch*len(train_dataiter))
-            self.summary_writer.add_scalar('clip_loss', clip_loss.detach().item(), global_step=train_step+self.curr_epoch*len(train_dataiter))
+            # self.summary_writer.add_scalar('clip_loss', clip_loss.detach().item(), global_step=train_step+self.curr_epoch*len(train_dataiter))
             
             # exponential moving average, show smooth values
             with torch.no_grad():
