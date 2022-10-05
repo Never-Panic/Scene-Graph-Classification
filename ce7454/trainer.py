@@ -25,12 +25,17 @@ class BaseTrainer:
         self.net = net
         self.train_loader = train_loader
 
-        self.optimizer = torch.optim.SGD(
-            net.parameters(),
-            learning_rate,
-            momentum=momentum,
+        # self.optimizer = torch.optim.SGD(
+        #     net.parameters(),
+        #     learning_rate,
+        #     momentum=momentum,
+        #     weight_decay=weight_decay,
+        #     nesterov=True,
+        # )
+        self.optimizer = torch.optim.Adam(
+            net.parameters(), 
+            learning_rate, 
             weight_decay=weight_decay,
-            nesterov=True,
         )
 
         self.scheduler = torch.optim.lr_scheduler.LambdaLR(
@@ -39,7 +44,7 @@ class BaseTrainer:
                 step,
                 epochs * len(train_loader),
                 1,  # since lr_lambda computes multiplicative factor
-                1e-6 / learning_rate,
+                5e-7 / learning_rate,
             ),
         )
         

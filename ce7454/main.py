@@ -8,6 +8,7 @@ from evaluator import Evaluator
 from torch.utils.data import DataLoader
 from torchvision.models import resnet50
 from trainer import BaseTrainer
+from model import DETR, BackBone
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_name', type=str, default='res50')
@@ -44,9 +45,14 @@ test_dataloader = DataLoader(test_dataset,
 print('Data Loaded...', flush=True)
 
 # loading model
-model = resnet50(pretrained=True)
-model.fc = torch.nn.Linear(2048, 56)
+# model = resnet50(pretrained=True)
+# model.fc = torch.nn.Linear(2048, 56)
+# model.cuda()
+
+
+model = DETR(BackBone())
 model.cuda()
+
 print('Model Loaded...', flush=True)
 
 # loading trainer
