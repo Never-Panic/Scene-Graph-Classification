@@ -4,6 +4,7 @@ work_dirs/
 wandb/
 mmdet/
 submission/
+log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -153,3 +154,4 @@ ce7454.zip
 ce7454_tools/
 ce7454/checkpoints
 ce7454/results
+ce7454/log

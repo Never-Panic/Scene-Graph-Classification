@@ -207,7 +207,7 @@ optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
 
 # learning policy
 lr_config = dict(policy='step', step=40)
-runner = dict(type='EpochBasedRunner', max_epochs=60)
+runner = dict(type='EpochBasedRunner', max_epochs=2)
 
 project_name = 'psgtr'
 expt_name = 'psgtr_r101_psg'
@@ -228,4 +228,4 @@ log_config = dict(
     ],
 )
 
-load_from = 'work_dirs/checkpoints/detr_pan_r101.pth'
+# load_from = 'work_dirs/checkpoints/detr_pan_r101.pth'
