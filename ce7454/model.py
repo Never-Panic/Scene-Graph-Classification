@@ -97,20 +97,20 @@ class CLIP_loss(nn.Module):
 class CLIP_classifier(nn.Module):
     def __init__(self, hidden_dim=1024) -> None:
         super().__init__()
-        clip_model, clip_preprocess = clip.load("ViT-B/16", device='cuda', jit=False)
+        clip_model, clip_preprocess = clip.load("ViT-L/14@336px", device='cuda', jit=False)
 
-        clip_model.train()
+        clip_model.eval()
         for p in clip_model.parameters():
-            p.requires_grad = True
+            p.requires_grad = False
         
         self.clip_model = clip_model
         self.preprocess = T.Compose([
-            T.Resize((224, 224)),
+            T.Resize((336, 336)),
             T.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
         ])
 
         self.ffn = torch.nn.Sequential(
-            torch.nn.Linear(512, hidden_dim),
+            torch.nn.Linear(768, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
@@ -120,8 +120,9 @@ class CLIP_classifier(nn.Module):
 
     def forward(self, imgs):
         imgs = self.preprocess(imgs)
-        image_z = self.clip_model.encode_image(imgs)        # [N, 512]
-        return self.ffn(image_z.float())                            # [N, 56]
+        image_z = self.clip_model.encode_image(imgs).float()        # [N, 768]
+
+        return self.ffn(image_z)                            # [N, 56]
         
 
 
