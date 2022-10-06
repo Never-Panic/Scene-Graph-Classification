@@ -109,16 +109,22 @@ class CLIP_classifier(nn.Module):
             T.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
         ])
 
+        drop_out_p = 0.2
         self.ffn = torch.nn.Sequential(
+            torch.nn.Dropout(p=drop_out_p),
             torch.nn.Linear(768, hidden_dim),
             nn.ReLU(),
+            torch.nn.Dropout(p=drop_out_p),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
+            torch.nn.Dropout(p=drop_out_p),
             nn.Linear(hidden_dim, 56),
         )
         
 
     def forward(self, imgs):
+        print(imgs.max())
+        exit()
         imgs = self.preprocess(imgs)
         image_z = self.clip_model.encode_image(imgs).float()        # [N, 768]
 
