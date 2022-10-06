@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from model import CLIP_loss
+from ignite.handlers.param_scheduler import create_lr_scheduler_with_warmup
 
 
 def cosine_annealing(step, total_steps, lr_max, lr_min):
@@ -21,6 +22,7 @@ class BaseTrainer:
                  learning_rate: float = 0.1,
                  momentum: float = 0.9,
                  weight_decay: float = 0.0005,
+                 lr_factor=1e-6,
                  epochs: int = 100,
                  model_name: str = 'model') -> None:
         self.net = net
@@ -43,7 +45,7 @@ class BaseTrainer:
         self.optimizer = torch.optim.Adam(
             self.net.prompt_learner.parameters(), 
             learning_rate, 
-            weight_decay=weight_decay,
+            # weight_decay=weight_decay,
         )
 
         self.scheduler = torch.optim.lr_scheduler.LambdaLR(
@@ -52,7 +54,7 @@ class BaseTrainer:
                 step,
                 epochs * len(train_loader),
                 1,  # since lr_lambda computes multiplicative factor
-                5e-7 / learning_rate,
+                lr_factor / learning_rate,
             ),
         )
         

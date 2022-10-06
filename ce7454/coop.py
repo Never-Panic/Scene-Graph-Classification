@@ -10,7 +10,7 @@ from clip import clip
 from clip.simple_tokenizer import SimpleTokenizer as _Tokenizer
 
 _tokenizer = _Tokenizer()
-IMG_SIZE = 224
+IMG_SIZE = 336
 
 
 class TextEncoder(nn.Module):
@@ -40,8 +40,8 @@ class PromptLearner(nn.Module):
     def __init__(self, classnames, clip_model):
         super().__init__()
         n_cls = len(classnames)
-        n_ctx = 6
-        ctx_init = "a thing is the other thing"
+        n_ctx = 16
+        ctx_init = None
         dtype = clip_model.dtype
         ctx_dim = clip_model.ln_final.weight.shape[0]
         clip_imsize = clip_model.visual.input_resolution
@@ -93,7 +93,7 @@ class PromptLearner(nn.Module):
         self.n_ctx = n_ctx
         self.tokenized_prompts = tokenized_prompts  # torch.Tensor
         self.name_lens = name_lens
-        self.class_token_position = "middle"
+        self.class_token_position = "end"
 
     def forward(self):
         ctx = self.ctx
@@ -172,7 +172,7 @@ class CustomCLIP(nn.Module):
         self.logit_scale = clip_model.logit_scale
         self.dtype = clip_model.dtype
         self.preprocess = T.Compose([
-            T.Resize((336, 336)),
+            T.Resize((IMG_SIZE, IMG_SIZE)),
             T.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
         ])
 

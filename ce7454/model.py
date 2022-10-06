@@ -160,5 +160,5 @@ class CLIP_classifier(nn.Module):
         
 
 def get_customCLIP(relations):
-    clip_model, clip_preprocess = clip.load("ViT-B/32", device='cpu', jit=False)
+    clip_model, clip_preprocess = clip.load("ViT-L/14@336px", device='cpu', jit=False)
     return CustomCLIP(relations, clip_model)
