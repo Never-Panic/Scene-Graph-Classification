@@ -26,11 +26,17 @@ def get_transforms(stage: str):
         return trn.Compose([
             Convert('RGB'),
             trn.Resize((1333, 800)),
-            trn.RandomHorizontalFlip(),
-            trn.RandomCrop((1333, 800), padding=4),
-            trn.ToTensor(),
-            trn.Normalize(mean, std),
+            trn.ToTensor(),                         # [0,1]
+            lambda x: x*255                         # [0,255]
         ])
+        # return trn.Compose([
+        #     Convert('RGB'),
+        #     trn.Resize((1333, 800)),
+        #     trn.RandomHorizontalFlip(),
+        #     trn.RandomCrop((1333, 800), padding=4),
+        #     trn.ToTensor(),
+        #     trn.Normalize(mean, std),
+        # ])
 
     elif stage in ['val', 'test']:
         return trn.Compose([
