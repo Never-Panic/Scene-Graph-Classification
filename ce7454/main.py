@@ -30,19 +30,19 @@ train_dataset = PSGClsDataset(stage='train')
 train_dataloader = DataLoader(train_dataset,
                               batch_size=args.batch_size,
                               shuffle=True,
-                              num_workers=2)
+                              num_workers=1)
 
 val_dataset = PSGClsDataset(stage='val')
 val_dataloader = DataLoader(val_dataset,
                             batch_size=32,
                             shuffle=False,
-                            num_workers=2)
+                            num_workers=1)
 
 test_dataset = PSGClsDataset(stage='test')
 test_dataloader = DataLoader(test_dataset,
                              batch_size=32,
                              shuffle=False,
-                             num_workers=2)
+                             num_workers=1)
 print('Data Loaded...', flush=True)
 
 # loading model

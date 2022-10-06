@@ -45,7 +45,7 @@ class BaseTrainer:
         self.optimizer = torch.optim.Adam(
             self.net.prompt_learner.parameters(), 
             learning_rate, 
-            # weight_decay=weight_decay,
+            weight_decay=weight_decay,
         )
 
         self.scheduler = torch.optim.lr_scheduler.LambdaLR(

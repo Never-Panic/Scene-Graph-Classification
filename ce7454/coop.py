@@ -12,6 +12,7 @@ from clip.simple_tokenizer import SimpleTokenizer as _Tokenizer
 _tokenizer = _Tokenizer()
 IMG_SIZE = 336
 
+predicates_classes = ''
 
 class TextEncoder(nn.Module):
     def __init__(self, clip_model):
@@ -41,7 +42,7 @@ class PromptLearner(nn.Module):
         super().__init__()
         n_cls = len(classnames)
         n_ctx = 16
-        ctx_init = None
+        ctx_init = "hanging from back of falling off going down painted running on crossing lying on sitting on flying over jumping over jumping from wearing carrying looking at guiding kissing eating drinking feeding biting catching picking playing with chasing climbing cleaning playing touching pushing pulling opening cooking talking to throwing slicing driving riding driving on about to hit kicking swinging entering exiting enclosing leaning on"
         dtype = clip_model.dtype
         ctx_dim = clip_model.ln_final.weight.shape[0]
         clip_imsize = clip_model.visual.input_resolution
