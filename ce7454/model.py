@@ -1,4 +1,4 @@
-from turtle import forward
+import random
 import torch
 import torch.nn as nn
 import torchvision
@@ -131,12 +131,12 @@ class CLIP_classifier(nn.Module):
     def augment(self, imgs):
         '''
         Args:
-            imgs: tensor in [0, 255] float32
+            imgs: tensor in [0, 1] float32
 
         Return:
             imgs: tensor in [-1, 1] float32
         '''
-        imgs = imgs.type(torch.uint8)
+        imgs = (imgs * 255).type(torch.uint8)
         imgs = self.augmenter(imgs).type(torch.float32) / 255.
         imgs = T.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])(imgs)
 
@@ -145,12 +145,16 @@ class CLIP_classifier(nn.Module):
 
     def forward(self, imgs):
         '''
-        If training, imgs are [0, 255] float32
+        If training, imgs are [0, 1] float32
         Else, imgs are [-1, 1] float32
         '''
         if self.training:
-            imgs = self.augment(imgs)
+            if random.random()>0.4:
+                imgs = self.augment(imgs)
+            else:
+                imgs = T.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])(imgs)
 
+        # need [-1,1] input
         imgs = self.preprocess(imgs)
         image_z = self.clip_model.encode_image(imgs).float()        # [N, 768]
 

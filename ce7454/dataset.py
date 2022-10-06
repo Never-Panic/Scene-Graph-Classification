@@ -27,7 +27,6 @@ def get_transforms(stage: str):
             Convert('RGB'),
             trn.Resize((1333, 800)),
             trn.ToTensor(),                         # [0,1]
-            lambda x: x*255                         # [0,255]
         ])
         # return trn.Compose([
         #     Convert('RGB'),
