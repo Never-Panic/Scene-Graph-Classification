@@ -24,22 +24,27 @@ class BaseTrainer:
                  epochs: int = 100,
                  model_name: str = 'model') -> None:
         self.net = net
-        # self.clip_loss = CLIP_loss()
+
+        print("Turning off gradients in both the image and the text encoder")
+        for name, param in self.net.named_parameters():
+            if "prompt_learner" not in name:
+                param.requires_grad_(False)
 
         self.train_loader = train_loader
 
-        self.optimizer = torch.optim.SGD(
-            net.parameters(),
-            learning_rate,
-            momentum=momentum,
-            weight_decay=weight_decay,
-            nesterov=True,
-        )
-        # self.optimizer = torch.optim.Adam(
-        #     net.parameters(), 
-        #     learning_rate, 
+        # self.optimizer = torch.optim.SGD(
+        #     net.parameters(),
+        #     learning_rate,
+        #     momentum=momentum,
         #     weight_decay=weight_decay,
+        #     nesterov=True,
         # )
+        print("Only optimize prompt")
+        self.optimizer = torch.optim.Adam(
+            self.net.prompt_learner.parameters(), 
+            learning_rate, 
+            weight_decay=weight_decay,
+        )
 
         self.scheduler = torch.optim.lr_scheduler.LambdaLR(
             self.optimizer,

@@ -8,7 +8,7 @@ from evaluator import Evaluator
 from torch.utils.data import DataLoader
 from torchvision.models import resnet50
 from trainer import BaseTrainer
-from model import DETR, BackBone, CLIP_classifier
+from model import DETR, BackBone, CLIP_classifier, get_customCLIP
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_name', type=str, default='res50')
@@ -26,7 +26,6 @@ os.makedirs('./results', exist_ok=True)
 
 # loading dataset
 train_dataset = PSGClsDataset(stage='train')
-relations = train_dataset.relations 
 train_dataloader = DataLoader(train_dataset,
                               batch_size=args.batch_size,
                               shuffle=True,
@@ -51,7 +50,7 @@ print('Data Loaded...', flush=True)
 
 # model = DETR(BackBone())
 
-model = CLIP_classifier()
+model = get_customCLIP(train_dataset.relations)
 
 model.cuda()
 print('Model Loaded...', flush=True)
@@ -71,7 +70,7 @@ print('Start Training...', flush=True)
 begin_epoch = time.time()
 best_val_recall = 0.0
 for epoch in range(0, args.epoch):
-    train_metrics = trainer.train_epoch(relations)
+    train_metrics = trainer.train_epoch(train_dataset.relations)
     val_metrics = evaluator.eval_recall(val_dataloader)
 
     # show log

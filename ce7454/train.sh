@@ -1,3 +1,4 @@
 CUDA_VISIBLE_DEVICES=$1 python main.py \
---model_name 'clip_attn_classifier_dropout0.05_augmix' \
---epoch 60
+--model_name 'prompt' \
+--lr 0.01 \
+--epoch 60 \

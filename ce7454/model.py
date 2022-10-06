@@ -8,6 +8,8 @@ from positional_encodings.torch_encodings import PositionalEncodingPermute2D
 
 import clip
 
+from coop import CustomCLIP
+
 
 class BackBone(nn.Module):
     def __init__(self) -> None:
@@ -109,7 +111,7 @@ class CLIP_classifier(nn.Module):
             T.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
         ])
 
-        drop_out_p = 0.05
+        drop_out_p = 0.2
         self.ffn = torch.nn.Sequential(
             torch.nn.Dropout(p=drop_out_p),
             torch.nn.Linear(768, hidden_dim),
@@ -123,10 +125,6 @@ class CLIP_classifier(nn.Module):
 
         self.augmenter = T.AugMix()
 
-        self.q_embed = torch.nn.Linear(768,768)
-        self.k_embed = torch.nn.Linear(768,768)
-        self.v_embed = torch.nn.Linear(768,768)
-        
 
     def augment(self, imgs):
         '''
@@ -158,14 +156,9 @@ class CLIP_classifier(nn.Module):
         imgs = self.preprocess(imgs)
         image_z = self.clip_model.encode_image(imgs).float()        # [N, 768]
 
-        q =  self.q_embed(image_z)[...,None]                        # [N, 768, 1]
-        k =  self.k_embed(image_z).unsqueeze(1)                     # [N, 1, 768]
-        v =  self.v_embed(image_z)[...,None]                        # [N, 768, 1]
-
-        attn = torch.nn.functional.softmax(torch.bmm(q, k), -1)     # [N, 768, 768]
-        image_z = torch.bmm(attn, v).squeeze()                      # [N, 768]
-
         return self.ffn(image_z)                            # [N, 56]
         
 
-
+def get_customCLIP(relations):
+    clip_model, clip_preprocess = clip.load("ViT-B/32", device='cpu', jit=False)
+    return CustomCLIP(relations, clip_model)
