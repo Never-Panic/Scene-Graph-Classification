@@ -56,7 +56,7 @@ class PSGClsDataset(Dataset):
         super(PSGClsDataset, self).__init__()
         with open('./data/psg/psg_cls_basic.json') as f:
             dataset = json.load(f)
-        self.relations = dataset['predicate_classes']
+        self.relations = dataset['predicate_classes'][6:]
         self.imglist = [
             d for d in dataset['data']
             if d['image_id'] in dataset[f'{stage}_image_ids']
@@ -85,6 +85,6 @@ class PSGClsDataset(Dataset):
         soft_label = torch.Tensor(self.num_classes)
         soft_label.fill_(0)
         soft_label[sample['relations']] = 1
-        sample['soft_label'] = soft_label
+        sample['soft_label'] = soft_label[6:]
         del sample['relations']
         return sample

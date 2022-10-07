@@ -33,13 +33,13 @@ class Evaluator:
                 pred = torch.topk(prob.data, self.k)[1]
                 pred = pred.cpu().detach().tolist()
                 pred_list.extend(pred)
-                for soft_label in batch['soft_label']:
+                for soft_label in batch['soft_label']: # [8, 50]
                     gt_label = (soft_label == 1).nonzero(as_tuple=True)[0]\
                                 .cpu().detach().tolist()
                     gt_list.append(gt_label)
 
         # compute mean recall
-        score_list = np.zeros([56, 2], dtype=int)
+        score_list = np.zeros([50, 2], dtype=int)
         for gt, pred in zip(gt_list, pred_list):
             for gt_id in gt:
                 # pos 0 for counting all existing relations
@@ -47,7 +47,8 @@ class Evaluator:
                 if gt_id in pred:
                     # pos 1 for counting relations that is recalled
                     score_list[gt_id][1] += 1
-        score_list = score_list[6:]
+        # NOTE: train with 50 classes
+        # score_list = score_list[6:]
         # to avoid nan
         score_list[:, 0][score_list[:, 0] == 0] = 1
         meanrecall = np.mean(score_list[:, 1] / score_list[:, 0])
@@ -70,7 +71,8 @@ class Evaluator:
                 data = batch['data'].cuda()
                 logits = self.net(data)
                 prob = torch.sigmoid(logits)
-                pred = torch.topk(prob.data, self.k)[1]
+                # NOTE: train with 50 classes
+                pred = torch.topk(prob.data, self.k)[1] + 6
                 pred = pred.cpu().detach().tolist()
                 pred_list.extend(pred)
         return pred_list
