@@ -27,6 +27,7 @@ os.makedirs('./results', exist_ok=True)
 
 # loading dataset
 train_dataset = PSGClsDataset(stage='train')
+relations = train_dataset.relations
 train_dataloader = DataLoader(train_dataset,
                               batch_size=args.batch_size,
                               shuffle=True,
@@ -51,7 +52,7 @@ print('Data Loaded...', flush=True)
 
 # model = DETR(BackBone())
 
-model = get_customCLIP(train_dataset.relations)
+model = get_customCLIP(relations)
 
 model.cuda()
 print('Model Loaded...', flush=True)
@@ -72,7 +73,7 @@ print('Start Training...', flush=True)
 begin_epoch = time.time()
 best_val_recall = 0.0
 for epoch in range(0, args.epoch):
-    train_metrics = trainer.train_epoch(train_dataset.relations)
+    train_metrics = trainer.train_epoch(relations)
     val_metrics = evaluator.eval_recall(val_dataloader)
 
     # show log

@@ -5,6 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
+
+from warmup_scheduler import GradualWarmupScheduler
 from tqdm import tqdm
 from model import CLIP_loss
 from ignite.handlers.param_scheduler import create_lr_scheduler_with_warmup
@@ -45,10 +47,10 @@ class BaseTrainer:
         self.optimizer = torch.optim.Adam(
             self.net.prompt_learner.parameters(), 
             learning_rate, 
-            weight_decay=weight_decay,
+            # weight_decay=weight_decay,
         )
 
-        self.scheduler = torch.optim.lr_scheduler.LambdaLR(
+        LR_scheduler = torch.optim.lr_scheduler.LambdaLR(
             self.optimizer,
             lr_lambda=lambda step: cosine_annealing(
                 step,
@@ -58,6 +60,10 @@ class BaseTrainer:
             ),
         )
         
+        self.scheduler = GradualWarmupScheduler(
+            self.optimizer, multiplier=1, total_epoch=100, after_scheduler=LR_scheduler
+        )
+
         logfolder=f'./log/{model_name}'
         os.makedirs(logfolder, exist_ok=True)
         self.summary_writer = SummaryWriter(logfolder)
@@ -103,6 +109,7 @@ class BaseTrainer:
             self.scheduler.step()
 
             self.summary_writer.add_scalar('loss', loss.detach().item(), global_step=train_step+self.curr_epoch*len(train_dataiter))
+            self.summary_writer.add_scalar('lr', self.scheduler.get_last_lr()[0], global_step=train_step+self.curr_epoch*len(train_dataiter))
             # self.summary_writer.add_scalar('clip_loss', clip_loss.detach().item(), global_step=train_step+self.curr_epoch*len(train_dataiter))
             
             # exponential moving average, show smooth values
