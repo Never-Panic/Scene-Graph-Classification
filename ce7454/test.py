@@ -14,7 +14,7 @@ test_dataloader = DataLoader(test_dataset,
 
 
 model = get_customCLIP(test_dataset.relations)
-model.load_state_dict(torch.load('/data/Projects/OpenPSG/ce7454/checkpoints/prompt_lr1e-2_factor1e-4_epoch20_ctx16_e20_lr0.01_bs32_m0.9_wd0.0005_best.ckpt'))
+model.load_state_dict(torch.load('/data/Projects/OpenPSG/ce7454/checkpoints/coop_pos_weight_lr1e-2_bs32_epoch15_e15_lr0.01_bs32_m0.9_wd0.0005_best.ckpt'))
 
 model.cuda()
 evaluator = Evaluator(model, k=3)

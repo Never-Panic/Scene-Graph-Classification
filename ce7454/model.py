@@ -8,7 +8,7 @@ from positional_encodings.torch_encodings import PositionalEncodingPermute2D
 
 import clip
 
-from cocoop import CustomCLIP
+from coop import CustomCLIP
 
 
 class BackBone(nn.Module):
