@@ -9,7 +9,6 @@ from torch.utils.tensorboard import SummaryWriter
 from warmup_scheduler import GradualWarmupScheduler
 from tqdm import tqdm
 from model import CLIP_loss
-from ignite.handlers.param_scheduler import create_lr_scheduler_with_warmup
 
 
 def cosine_annealing(step, total_steps, lr_max, lr_min):
@@ -83,7 +82,7 @@ class BaseTrainer:
         return self.clip_loss(imgs, texts)
 
 
-    def train_epoch(self, relations):
+    def train_epoch(self, pos_weight):
         self.net.train()  # enter train mode
 
         loss_avg = 0.0
@@ -97,7 +96,8 @@ class BaseTrainer:
             logits = self.net(data)
             loss = F.binary_cross_entropy_with_logits(logits,
                                                       target,
-                                                      reduction='sum')
+                                                      reduction='sum',
+                                                      pos_weight=pos_weight)
 
             # clip_loss = self.cal_clip_loss(data, logits, relations)
             

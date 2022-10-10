@@ -65,6 +65,18 @@ class PSGClsDataset(Dataset):
         self.transform_image = get_transforms(stage)
         self.num_classes = num_classes
 
+        class_count = torch.Tensor(self.num_classes)
+        class_count.fill_(0)
+        for i in self.imglist:
+            
+            soft_label = torch.Tensor(self.num_classes)
+            soft_label.fill_(0)
+            soft_label[i['relations']] = 1
+            class_count += soft_label
+
+        class_count = class_count[6:]
+        self.pos_weight = (len(self.imglist) - class_count) / (class_count+1e-8)
+
     def __len__(self):
         return len(self.imglist)
 
