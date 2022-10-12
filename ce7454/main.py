@@ -90,11 +90,13 @@ for epoch in range(0, args.epoch):
         torch.save(model.state_dict(), f'./checkpoints/{savename}_best.ckpt')
         best_val_recall = val_metrics['mean_recall']
 
+torch.save(model.state_dict(), f'./checkpoints/{savename}_final.ckpt')
+
 print('Training Completed...', flush=True)
 
 # saving result!
 print('Loading Best Ckpt...', flush=True)
-checkpoint = torch.load(f'checkpoints/{savename}_best.ckpt')
+checkpoint = torch.load(f'checkpoints/{savename}_final.ckpt')
 model.load_state_dict(checkpoint)
 test_evaluator = Evaluator(model, k=3)
 check_metrics = test_evaluator.eval_recall(val_dataloader)
